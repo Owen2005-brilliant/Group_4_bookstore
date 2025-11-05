@@ -1,0 +1,24 @@
+[run]
+source = fe,be
+omit = 
+    */__pycache__/*
+    */__init__.py
+    be/model/buyer.py
+    be/model/seller.py
+    be/model/user.py
+    be/model/db_conn.py
+    be/model/error.py
+    be/model/book_mongo.py
+    be/app.py
+    be/tempCodeRunnerFile.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+
