@@ -4,6 +4,7 @@ from be.model import store
 class DBConn:
     def __init__(self):
         self.conn = store.get_db_conn()
+        
 
     def user_id_exist(self, user_id):
         cursor = self.conn.execute(
