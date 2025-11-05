@@ -15,11 +15,11 @@
 ### 2. 测试配置
 
 测试配置在 `fe/conf.py` 中设置：
-- `Seller_Num`: 卖家数量（默认 2）
-- `Buyer_Num`: 买家数量（默认 10）
-- `Session`: 并发会话数（默认 1，可调整以测试并发性能）
-- `Request_Per_Session`: 每个会话的请求数（默认 1000）
-- `Book_Num_Per_Store`: 每个店铺的书籍数量（默认 2000）
+- `Seller_Num`: 卖家数量
+- `Buyer_Num`: 买家数量
+- `Session`: 并发会话数
+- `Request_Per_Session`
+- `Book_Num_Per_Store`
 
 ### 3. 性能指标
 
@@ -38,18 +38,25 @@
 
 ## 运行性能测试
 
-### 方法1：通过 pytest 运行
+### 方法1：直接运行性能测试脚本（推荐）
 
 ```bash
-pytest fe/test/test_bench.py -v
+# 确保后端服务器正在运行（在另一个终端运行）
+python be/app.py
+
+# 运行性能测试
+python fe/bench/run.py
+
+# 解析测试结果（从日志中提取并生成报告）
+python fe/bench/parse_results.py
 ```
 
-### 方法2：直接运行性能测试脚本
+测试结果会保存在：
+- 日志文件: `fe/bench/benchmark_YYYYMMDD_HHMMSS.log`
+- 解析后的报告: `fe/bench/benchmark_YYYYMMDD_HHMMSS_parsed_results.txt`
 
-```python
-from fe.bench.run import run_bench
-run_bench()
-```
+
+**注意**：测试结果会输出到日志文件，可以使用 `parse_results.py` 脚本解析并生成可读的报告。
 
 ## 索引优化对性能的影响
 
@@ -81,45 +88,7 @@ run_bench()
    - `store_id` 唯一索引：快速查找店铺
    - `user_id` 索引：优化店铺所有者查询
 
-### 性能优化效果
-
-通过索引优化，在以下场景中获得了显著的性能提升：
-
-1. **下单操作**：
-   - 使用 `(store_id, book_id)` 复合索引，库存查询从 O(n) 降低到 O(1)
-   - 减少了全表扫描，提高了并发下单性能
-
-2. **订单查询**：
-   - 使用 `buyer_id` 索引，用户查询订单时只扫描自己的订单
-   - 使用 `created_time` 索引，超时订单查询效率提升
-
-3. **书籍搜索**：
-   - 全文索引支持多字段快速搜索
-   - 降级到正则表达式时，`title` 和 `author` 索引仍能提供支持
-
-## 测试结果示例
-
-运行性能测试后，日志会输出类似以下信息：
-
-```
-INFO:TPS_C=XXX, NO=OK:XXX Thread_num:XXX TOTAL:XXX LATENCY:XXX, P=OK:XXX Thread_num:XXX TOTAL:XXX LATENCY:XXX
-```
-
-其中：
-- `TPS_C`: 吞吐量（每秒完成的订单数）
-- `NO=OK`: 成功创建订单数
-- `LATENCY`: 平均延迟（秒）
-- `P=OK`: 成功付款数
-
-## 性能测试建议
-
-1. **调整并发数**：修改 `fe/conf.py` 中的 `Session` 参数，测试不同并发场景下的性能
-2. **对比测试**：可以对比有无索引情况下的性能差异
-3. **监控资源**：运行测试时监控 MongoDB 的 CPU 和内存使用情况
-4. **多次测试**：运行多次测试取平均值，确保结果稳定
-
-## 性能优化建议
-
+## 性能优化
 1. **索引维护**：定期检查索引使用情况，删除未使用的索引
 2. **查询优化**：使用 `explain()` 分析慢查询，优化查询语句
 3. **连接池**：使用 MongoDB 连接池减少连接开销
