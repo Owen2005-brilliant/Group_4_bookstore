@@ -4,6 +4,7 @@ from fe.bench.session import Session
 
 def run_bench():
     wl = Workload()
+    
     wl.gen_database()
 
     sessions = []
